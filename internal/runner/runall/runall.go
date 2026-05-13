@@ -177,7 +177,6 @@ func Run(ctx context.Context, l log.Logger, v run.Venv, opts *options.Terragrunt
 }
 
 // RunAllOnStack drives the supplied [common.StackRunner] to completion.
-// v is the virtualized environment threaded into the per-unit run pipeline.
 func RunAllOnStack(
 	ctx context.Context,
 	l log.Logger,

@@ -48,7 +48,6 @@ const (
 //
 // See the NewTerraformSource method for how we determine the temporary folder so we can reuse it across multiple
 // runs of Terragrunt to avoid downloading everything from scratch every time.
-// v is the virtualized environment carried through to download hooks.
 func DownloadTerraformSource(
 	ctx context.Context,
 	l log.Logger,
