@@ -250,6 +250,8 @@ func checkUnitVersionConstraints(
 		l = unitLogger
 	}
 
+	// TODO: thread venv from the CLI entrypoint through the runner-pool
+	// builder so this leaf stops constructing a fresh OS exec.
 	_, ver, impl, err := run.PopulateTFVersion(ctx, l, vexec.NewOSExec(), run.PopulateTFVersionInput{
 		TFOpts:       configbridge.TFRunOptsFromOpts(unitOpts),
 		WorkingDir:   unitOpts.WorkingDir,

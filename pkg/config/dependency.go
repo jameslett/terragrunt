@@ -1505,7 +1505,9 @@ func runTerragruntOutputJSON(ctx context.Context, pctx *ParsingContext, l log.Lo
 	runOpts.AuthProviderCmd = pctx.AuthProviderCmd
 	runOpts.CASCloneDepth = pctx.CASCloneDepth
 
-	err = run.Run(ctx, l, runOpts, report.NewReport(), runCfg, credsGetter)
+	// TODO: thread venv from the CLI entrypoint through HCL dependency
+	// evaluation so this leaf participates in the root virtualized environment.
+	err = run.Run(ctx, l, run.OSVenv(), runOpts, report.NewReport(), runCfg, credsGetter)
 	if err != nil {
 		return nil, errors.New(err)
 	}

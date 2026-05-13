@@ -142,7 +142,7 @@ func Run(ctx context.Context, l log.Logger, opts *options.TerragruntOptions, v v
 		}
 	}()
 
-	runErr = run.Run(ctx, l, configbridge.NewRunOptions(tgOpts), r, runCfg, credsGetter)
+	runErr = run.Run(ctx, l, run.FromRoot(v), configbridge.NewRunOptions(tgOpts), r, runCfg, credsGetter)
 
 	return runErr
 }

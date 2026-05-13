@@ -48,9 +48,11 @@ const (
 //
 // See the NewTerraformSource method for how we determine the temporary folder so we can reuse it across multiple
 // runs of Terragrunt to avoid downloading everything from scratch every time.
+// v is the virtualized environment carried through to download hooks.
 func DownloadTerraformSource(
 	ctx context.Context,
 	l log.Logger,
+	v Venv,
 	source string,
 	opts *Options,
 	cfg *runcfg.RunConfig,
@@ -77,7 +79,7 @@ func DownloadTerraformSource(
 	dirLock.Lock()
 	defer dirLock.Unlock()
 
-	downloaded, err := DownloadTerraformSourceIfNecessary(ctx, l, terraformSource, opts, cfg, r)
+	downloaded, err := DownloadTerraformSourceIfNecessary(ctx, l, v, terraformSource, opts, cfg, r)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +153,7 @@ func DownloadTerraformSource(
 func DownloadTerraformSourceIfNecessary(
 	ctx context.Context,
 	l log.Logger,
+	v Venv,
 	terraformSource *tf.Source,
 	opts *Options,
 	cfg *runcfg.RunConfig,
@@ -219,6 +222,7 @@ func DownloadTerraformSourceIfNecessary(
 	downloadErr := RunActionWithHooks(
 		ctx,
 		l,
+		v,
 		"download source",
 		optsForDownload,
 		cfg,
