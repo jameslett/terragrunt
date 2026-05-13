@@ -47,6 +47,7 @@ import (
 	"github.com/gruntwork-io/terragrunt/internal/errors"
 	"github.com/gruntwork-io/terragrunt/internal/runner/run"
 	"github.com/gruntwork-io/terragrunt/internal/util"
+	"github.com/gruntwork-io/terragrunt/internal/venv"
 	"github.com/gruntwork-io/terragrunt/internal/version"
 	"github.com/gruntwork-io/terragrunt/internal/vexec"
 	"github.com/gruntwork-io/terragrunt/pkg/options"
@@ -1101,7 +1102,7 @@ func RunTerragruntCommandWithContext(
 		log.WithFormatter(format.NewFormatter(format.NewPrettyFormatPlaceholders())),
 	)
 
-	app := cli.NewApp(l, opts)
+	app := cli.NewApp(l, opts, venv.OSVenv())
 
 	ctx = log.ContextWithLogger(ctx, l)
 

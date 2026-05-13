@@ -11,6 +11,7 @@ import (
 	"github.com/gruntwork-io/terragrunt/internal/shell"
 	"github.com/gruntwork-io/terragrunt/internal/tf"
 	"github.com/gruntwork-io/terragrunt/internal/util"
+	"github.com/gruntwork-io/terragrunt/internal/venv"
 	"github.com/gruntwork-io/terragrunt/pkg/log"
 	"github.com/gruntwork-io/terragrunt/pkg/log/format"
 	"github.com/gruntwork-io/terragrunt/pkg/options"
@@ -43,7 +44,7 @@ func main() {
 		errors.Recover(checkForErrorsAndExit(l, exitCode.GetFinalExitCode()))
 	}()
 
-	app := cli.NewApp(l, opts)
+	app := cli.NewApp(l, opts, venv.OSVenv())
 
 	ctx := setupContext(l, exitCode)
 	err := app.RunContext(ctx, os.Args)
