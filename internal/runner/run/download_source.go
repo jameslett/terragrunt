@@ -235,11 +235,11 @@ func DownloadTerraformSourceIfNecessary(
 					Spinner: "Downloading source from " + sourceURL + "...",
 					Done:    "Downloaded source from " + sourceURL,
 				}, func() error {
-					return downloadSource(childCtx, l, terraformSource, opts, cfg, r)
+					return downloadSource(childCtx, l, v, terraformSource, opts, cfg, r)
 				})
 			}
 
-			return downloadSource(childCtx, l, terraformSource, opts, cfg, r)
+			return downloadSource(childCtx, l, v, terraformSource, opts, cfg, r)
 		},
 	)
 	if downloadErr != nil {
@@ -336,6 +336,7 @@ func readVersionFile(terraformSource *tf.Source) (string, error) {
 func downloadSource(
 	ctx context.Context,
 	l log.Logger,
+	v Venv,
 	src *tf.Source,
 	opts *Options,
 	cfg *runcfg.RunConfig,
@@ -374,7 +375,7 @@ func downloadSource(
 	}
 
 	return opts.RunWithErrorHandling(ctx, l, r, func() error {
-		client, err := BuildDownloadClient(l, opts, cfg)
+		client, err := BuildDownloadClient(l, v, opts, cfg)
 		if err != nil {
 			return err
 		}
@@ -464,21 +465,21 @@ func tryCASDownload(ctx context.Context, l log.Logger, src *tf.Source, opts *Opt
 // abstraction. Returns [ErrNonOSFilesystem] otherwise.
 //
 // Exported so tests can assert the protocol set directly.
-func BuildDownloadClient(l log.Logger, opts *Options, cfg *runcfg.RunConfig) (*getter.Client, error) {
+// v supplies the filesystem used by the file-copy getter and the
+// registry getter's archive expansion.
+func BuildDownloadClient(l log.Logger, v Venv, opts *Options, cfg *runcfg.RunConfig) (*getter.Client, error) {
 	if !vfs.IsOSFS(opts.FS) {
 		return nil, ErrNonOSFilesystem
 	}
 
 	return getter.NewClient(
 		getter.WithLogger(l),
-		getter.WithFileCopy(getter.NewFileCopyGetter().
+		getter.WithFileCopy(getter.NewFileCopyGetter(v.FS).
 			WithLogger(l).
-			WithFS(opts.FS).
 			WithIncludeInCopy(cfg.Terraform.IncludeInCopy...).
 			WithExcludeFromCopy(cfg.Terraform.ExcludeFromCopy...).
 			WithFastCopy(controls.IsFastCopyEnabled(opts.StrictControls))),
-		getter.WithTFRegistry(getter.NewRegistryGetter(l).
-			WithFS(opts.FS).
+		getter.WithTFRegistry(getter.NewRegistryGetter(l, v.FS).
 			WithTofuImplementation(opts.TofuImplementation)),
 	), nil
 }

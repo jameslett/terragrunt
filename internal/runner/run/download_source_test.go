@@ -633,7 +633,7 @@ func TestUpdateGettersExcludeFromCopy(t *testing.T) {
 			terragruntOptions, err := options.NewTerragruntOptionsForTest("./test")
 			require.NoError(t, err)
 
-			client, err := run.BuildDownloadClient(logger.CreateLogger(), configbridge.NewRunOptions(terragruntOptions), tc.cfg)
+			client, err := run.BuildDownloadClient(logger.CreateLogger(), run.OSVenv(), configbridge.NewRunOptions(terragruntOptions), tc.cfg)
 			require.NoError(t, err)
 
 			fileGetter, ok := findGetter[*getter.FileCopyGetter](client.Getters)
@@ -659,6 +659,7 @@ func TestBuildDownloadClientHTTPNetrc(t *testing.T) {
 
 	client, err := run.BuildDownloadClient(
 		logger.CreateLogger(),
+		run.OSVenv(),
 		configbridge.NewRunOptions(terragruntOptions),
 		&runcfg.RunConfig{Terraform: runcfg.TerraformConfig{}},
 	)
@@ -682,6 +683,7 @@ func TestBuildDownloadClientCoversDefaultSchemes(t *testing.T) {
 
 	client, err := run.BuildDownloadClient(
 		logger.CreateLogger(),
+		run.OSVenv(),
 		configbridge.NewRunOptions(terragruntOptions),
 		&runcfg.RunConfig{Terraform: runcfg.TerraformConfig{}},
 	)
@@ -1098,7 +1100,7 @@ func TestHTTPGetterNetrcAuthentication(t *testing.T) {
 
 	dst := filepath.Join(t.TempDir(), "module.tf")
 
-	client, err := run.BuildDownloadClient(logger.CreateLogger(), configbridge.NewRunOptions(opts), cfg)
+	client, err := run.BuildDownloadClient(logger.CreateLogger(), run.OSVenv(), configbridge.NewRunOptions(opts), cfg)
 	require.NoError(t, err)
 
 	_, err = client.Get(t.Context(), &getter.Request{
@@ -1180,6 +1182,7 @@ func TestBuildDownloadClientRejectsNonOSFilesystem(t *testing.T) {
 
 	client, err := run.BuildDownloadClient(
 		logger.CreateLogger(),
+		run.OSVenv(),
 		runOpts,
 		&runcfg.RunConfig{Terraform: runcfg.TerraformConfig{}},
 	)
