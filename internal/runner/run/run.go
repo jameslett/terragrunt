@@ -380,7 +380,7 @@ func RunActionWithHooks(
 		PreviousExecErrors: allErrors,
 		HookType:           HookTypeAfter,
 	})
-	errorHookErrors := ProcessErrorHooks(ctx, l, v.Exec, cfg.Terraform.ErrorHooks, opts, allErrors)
+	errorHookErrors := ProcessErrorHooks(ctx, l, v.Exec, cfg.Terraform.ErrorHooks, cfg, opts, allErrors)
 	allErrors = allErrors.Append(postHookErrors, errorHookErrors)
 
 	return allErrors.ErrorOrNil()

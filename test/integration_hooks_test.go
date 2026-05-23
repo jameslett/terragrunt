@@ -493,17 +493,17 @@ func TestTerragruntHookContextEnvExperimentEnabled(t *testing.T) {
 	assert.Contains(t, string(beforeOut), "TG_CTX_HOOK_TYPE=before_hook")
 	assert.Contains(t, string(beforeOut), "TG_CTX_HOOK_NAME=shared_name_hook")
 	assert.Contains(t, string(beforeOut), "TG_CTX_TERRAGRUNT_DIR="+rootPath)
-	assert.Contains(t, string(beforeOut), "TG_CTX_SOURCE=")
-	assert.NotContains(t, string(beforeOut), "TG_CTX_SOURCE=<unset>")
-	assert.NotContains(t, string(beforeOut), "TG_CTX_TERRAGRUNT_DIR=<unset>")
+	assert.Contains(t, string(beforeOut), "TG_CTX_SOURCE="+rootPath+"/modules/foo")
 
 	assert.Contains(t, string(afterOut), "TG_CTX_HOOK_TYPE=after_hook")
 	assert.Contains(t, string(afterOut), "TG_CTX_HOOK_NAME=shared_name_hook")
 	assert.Contains(t, string(afterOut), "TG_CTX_TERRAGRUNT_DIR="+rootPath)
+	assert.Contains(t, string(afterOut), "TG_CTX_SOURCE="+rootPath+"/modules/foo")
 
 	assert.Contains(t, string(errorOut), "TG_CTX_HOOK_TYPE=error_hook")
 	assert.Contains(t, string(errorOut), "TG_CTX_HOOK_NAME=error_hook_1")
 	assert.Contains(t, string(errorOut), "TG_CTX_TERRAGRUNT_DIR="+rootPath)
+	assert.Contains(t, string(errorOut), "TG_CTX_SOURCE="+rootPath+"/modules/foo")
 }
 
 func TestTerragruntHookContextEnvExperimentDisabled(t *testing.T) {

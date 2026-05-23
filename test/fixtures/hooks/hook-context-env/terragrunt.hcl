@@ -1,4 +1,6 @@
 terraform {
+  source = "${get_terragrunt_dir()}/modules/foo"
+
   before_hook "shared_name_hook" {
     commands = ["apply"]
     execute  = ["${get_terragrunt_dir()}/hook.sh", "${get_terragrunt_dir()}/before.out"]

@@ -11,7 +11,7 @@ Expose additional `TG_CTX_*` environment variables to hook scripts.
 When enabled, Terragrunt sets three additional environment variables on the process running every `before_hook`, `after_hook`, and `error_hook`:
 
 - `TG_CTX_HOOK_TYPE` — `before_hook`, `after_hook`, or `error_hook`, depending on which lifecycle phase is executing the hook.
-- `TG_CTX_SOURCE` — the raw evaluated value of `terraform.source` for the current unit. Empty string when the unit has no `source` configured.
+- `TG_CTX_SOURCE` — the resolved terraform source URL for the current unit, matching the precedence Terragrunt uses for the actual download: the `--source` CLI override if set, otherwise the evaluated `terraform.source` (with `--source-map` applied), otherwise `.`.
 - `TG_CTX_TERRAGRUNT_DIR` — the directory containing the current Terragrunt config (equivalent to `get_terragrunt_dir()`).
 
 These variables make it easier for hook scripts to branch on lifecycle phase, to know whether the unit pulls remote source, and to locate the config directory without having to thread that information through hook arguments.
@@ -31,7 +31,7 @@ case "$TG_CTX_HOOK_TYPE" in
   error_hook)  echo "failure in $TG_CTX_TERRAGRUNT_DIR" ;;
 esac
 
-if [ -n "$TG_CTX_SOURCE" ]; then
+if [ "$TG_CTX_SOURCE" != "." ]; then
   echo "unit uses source: $TG_CTX_SOURCE"
 fi
 ```

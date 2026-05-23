@@ -88,6 +88,7 @@ func ProcessErrorHooks(
 	l log.Logger,
 	exec vexec.Exec,
 	hooks []runcfg.ErrorHook,
+	cfg *runcfg.RunConfig,
 	opts *Options,
 	previousExecErrors *errors.MultiError,
 ) error {
@@ -134,7 +135,7 @@ func ProcessErrorHooks(
 
 				actionToExecute := curHook.Execute[0]
 				actionParams := curHook.Execute[1:]
-				hookOpts := optsWithHookEnvs(opts, curHook.Name, HookTypeError)
+				hookOpts := optsWithHookEnvs(opts, cfg, curHook.Name, HookTypeError)
 
 				_, possibleError := shell.RunCommandWithOutput(
 					ctx,
@@ -222,7 +223,7 @@ func runHook(
 
 	actionToExecute := curHook.Execute[0]
 	actionParams := curHook.Execute[1:]
-	hookOpts := optsWithHookEnvs(opts, curHook.Name, hookType)
+	hookOpts := optsWithHookEnvs(opts, cfg, curHook.Name, hookType)
 
 	if actionToExecute == "tflint" {
 		return executeTFLint(ctx, l, v, opts, cfg, curHook, workingDir)
@@ -270,7 +271,7 @@ func executeTFLint(
 	return nil
 }
 
-func optsWithHookEnvs(opts *Options, hookName, hookType string) *Options {
+func optsWithHookEnvs(opts *Options, cfg *runcfg.RunConfig, hookName, hookType string) *Options {
 	newOpts := *opts
 	newOpts.Env = cloner.Clone(opts.Env)
 	newOpts.Env[HookCtxTFPathEnvName] = opts.TFPath
@@ -278,8 +279,13 @@ func optsWithHookEnvs(opts *Options, hookName, hookType string) *Options {
 	newOpts.Env[HookCtxHookNameEnvName] = hookName
 
 	if opts.Experiments.Evaluate(experiment.HookContextEnv) {
+		source, err := runcfg.GetTerraformSourceURL(opts.Source, opts.SourceMap, opts.OriginalTerragruntConfigPath, cfg)
+		if err != nil {
+			source = cfg.Terraform.Source
+		}
+
 		newOpts.Env[HookCtxHookTypeEnvName] = hookType
-		newOpts.Env[HookCtxSourceEnvName] = opts.Source
+		newOpts.Env[HookCtxSourceEnvName] = source
 		newOpts.Env[HookCtxTerragruntDirEnvName] = filepath.Dir(opts.TerragruntConfigPath)
 	}
 
