@@ -3,12 +3,14 @@ package run
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
 
 	"github.com/gruntwork-io/terragrunt/internal/cloner"
 	"github.com/gruntwork-io/terragrunt/internal/errors"
+	"github.com/gruntwork-io/terragrunt/internal/experiment"
 	"github.com/gruntwork-io/terragrunt/internal/report"
 	"github.com/gruntwork-io/terragrunt/internal/runner/runcfg"
 	"github.com/gruntwork-io/terragrunt/internal/shell"
@@ -24,6 +26,17 @@ const (
 	HookCtxTFPathEnvName   = "TG_CTX_TF_PATH"
 	HookCtxCommandEnvName  = "TG_CTX_COMMAND"
 	HookCtxHookNameEnvName = "TG_CTX_HOOK_NAME"
+
+	// The following are gated behind the hook-context-env experiment.
+	HookCtxHookTypeEnvName      = "TG_CTX_HOOK_TYPE"
+	HookCtxSourceEnvName        = "TG_CTX_SOURCE"
+	HookCtxTerragruntDirEnvName = "TG_CTX_TERRAGRUNT_DIR"
+)
+
+const (
+	HookTypeBefore = "before_hook"
+	HookTypeAfter  = "after_hook"
+	HookTypeError  = "error_hook"
 )
 
 // hookErrorMessage extracts command, args and output from the error
@@ -103,7 +116,7 @@ func processErrorHooks(
 
 				actionToExecute := curHook.Execute[0]
 				actionParams := curHook.Execute[1:]
-				hookOpts := optsWithHookEnvs(opts, curHook.Name)
+				hookOpts := optsWithHookEnvs(opts, curHook.Name, HookTypeError)
 
 				_, possibleError := shell.RunCommandWithOutput(
 					ctx,
@@ -136,6 +149,7 @@ func ProcessHooks(
 	ctx context.Context,
 	l log.Logger,
 	hooks []runcfg.Hook,
+	hookType string,
 	opts *Options,
 	cfg *runcfg.RunConfig,
 	previousExecErrors *errors.MultiError,
@@ -162,7 +176,7 @@ func ProcessHooks(
 				"hook": curHook.Name,
 				"dir":  curHook.WorkingDir,
 			}, func(ctx context.Context) error {
-				return runHook(ctx, l, opts, cfg, curHook)
+				return runHook(ctx, l, opts, cfg, curHook, hookType)
 			})
 			if err != nil {
 				errorsOccured = multierror.Append(errorsOccured, err)
@@ -196,6 +210,7 @@ func runHook(
 	opts *Options,
 	cfg *runcfg.RunConfig,
 	curHook *runcfg.Hook,
+	hookType string,
 ) error {
 	l.Infof("Executing hook: %s", curHook.Name)
 
@@ -204,7 +219,7 @@ func runHook(
 
 	actionToExecute := curHook.Execute[0]
 	actionParams := curHook.Execute[1:]
-	hookOpts := optsWithHookEnvs(opts, curHook.Name)
+	hookOpts := optsWithHookEnvs(opts, curHook.Name, hookType)
 
 	if actionToExecute == "tflint" {
 		return executeTFLint(ctx, l, opts, cfg, curHook, workingDir)
@@ -251,12 +266,18 @@ func executeTFLint(
 	return nil
 }
 
-func optsWithHookEnvs(opts *Options, hookName string) *Options {
+func optsWithHookEnvs(opts *Options, hookName, hookType string) *Options {
 	newOpts := *opts
 	newOpts.Env = cloner.Clone(opts.Env)
 	newOpts.Env[HookCtxTFPathEnvName] = opts.TFPath
 	newOpts.Env[HookCtxCommandEnvName] = opts.TerraformCommand
 	newOpts.Env[HookCtxHookNameEnvName] = hookName
+
+	if opts.Experiments.Evaluate(experiment.HookContextEnv) {
+		newOpts.Env[HookCtxHookTypeEnvName] = hookType
+		newOpts.Env[HookCtxSourceEnvName] = opts.Source
+		newOpts.Env[HookCtxTerragruntDirEnvName] = filepath.Dir(opts.TerragruntConfigPath)
+	}
 
 	return &newOpts
 }
