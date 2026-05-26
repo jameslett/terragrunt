@@ -1178,11 +1178,13 @@ func TestBuildDownloadClientRejectsNonOSFilesystem(t *testing.T) {
 	require.NoError(t, err)
 
 	runOpts := configbridge.NewRunOptions(opts)
-	runOpts.FS = vfs.NewMemMapFS()
+
+	v := run.OSVenv()
+	v.FS = vfs.NewMemMapFS()
 
 	client, err := run.BuildDownloadClient(
 		logger.CreateLogger(),
-		run.OSVenv(),
+		v,
 		runOpts,
 		&runcfg.RunConfig{Terraform: runcfg.TerraformConfig{}},
 	)

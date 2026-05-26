@@ -459,15 +459,14 @@ func tryCASDownload(ctx context.Context, l log.Logger, src *tf.Source, opts *Opt
 // protocol set are: FileCopyGetter (copies local sources instead of
 // symlinking) and RegistryGetter (resolves tfr:// sources).
 //
-// opts.FS must be the OS-backed filesystem from [vfs.NewOSFS]; the returned
-// client shells out to go-getter and other libraries that bypass the vfs
+// v.FS must be the OS-backed filesystem from [vfs.NewOSFS]; it backs the
+// file-copy getter and the registry getter's archive expansion, both of
+// which shell out to go-getter and other libraries that bypass the vfs
 // abstraction. Returns [ErrNonOSFilesystem] otherwise.
 //
 // Exported so tests can assert the protocol set directly.
-// v supplies the filesystem used by the file-copy getter and the
-// registry getter's archive expansion.
 func BuildDownloadClient(l log.Logger, v Venv, opts *Options, cfg *runcfg.RunConfig) (*getter.Client, error) {
-	if !vfs.IsOSFS(opts.FS) {
+	if !vfs.IsOSFS(v.FS) {
 		return nil, ErrNonOSFilesystem
 	}
 

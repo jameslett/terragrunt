@@ -44,7 +44,7 @@ type ParsingContext struct {
 	// Venv is the virtualized environment used by HCL helper functions
 	// that shell out (e.g. get_repo_root) or evaluate dependency outputs.
 	// Defaults to the OS-backed environment when [NewParsingContext] is
-	// called; callers with a threaded root Venv override via [WithVenv].
+	// called; callers with a threaded root Venv set it before parsing.
 	Venv venv.Venv
 
 	TerraformCliArgs *iacargs.IacArgs
@@ -190,16 +190,6 @@ func (ctx *ParsingContext) WithTrackInclude(trackInclude *TrackInclude) *Parsing
 func (ctx *ParsingContext) WithParseOption(parserOptions []hclparse.Option) *ParsingContext {
 	c := ctx.Clone()
 	c.ParserOptions = parserOptions
-
-	return c
-}
-
-// WithVenv returns a new ParsingContext that uses the supplied virtualized
-// environment for HCL helpers that shell out (e.g. get_repo_root) and for
-// dependency-output evaluation.
-func (ctx *ParsingContext) WithVenv(v venv.Venv) *ParsingContext {
-	c := ctx.Clone()
-	c.Venv = v
 
 	return c
 }
