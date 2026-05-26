@@ -383,7 +383,13 @@ func applyUserValues(vars []*config.ParsedVariable, values map[string]string) {
 // terragrunt.hcl with `# TODO: fill in value` placeholders for every input.
 // It is the non-interactive entry point used by the CLI scaffold command and
 // the catalog TUI's `S` (placeholder) keybind.
-func Run(ctx context.Context, l log.Logger, v venv.Venv, opts *options.TerragruntOptions, moduleURL, templateURL string) error {
+func Run(
+	ctx context.Context,
+	l log.Logger,
+	v venv.Venv,
+	opts *options.TerragruntOptions,
+	moduleURL, templateURL string,
+) error {
 	plan, err := Prepare(ctx, l, v, opts, moduleURL, templateURL)
 	if err != nil {
 		return err
